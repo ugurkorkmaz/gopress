@@ -1,5 +1,5 @@
 package database
 
-func Connect() {
-
+func Connect() error {
+	return nil
 }
