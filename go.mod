@@ -2,7 +2,10 @@ module gopress
 
 go 1.18
 
-require github.com/gofiber/fiber/v2 v2.36.0
+require (
+	github.com/gofiber/fiber/v2 v2.36.0
+	github.com/joho/godotenv v1.4.0
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
