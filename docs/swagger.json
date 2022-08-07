@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "GoPress API Documentation",
-        "title": "GoPress API",
+        "title": "GoPress API Documentation",
         "termsOfService": "http://github.com/ugurkorkmaz/gopress/",
         "contact": {
             "name": "API Support",
@@ -16,5 +16,59 @@
     },
     "host": "localhost:3000",
     "basePath": "/",
-    "paths": {}
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "description": "Register a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ent.User"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ent.User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "uuid": {
+                    "description": "UUID holds the value of the \"uuid\" field.",
+                    "type": "string"
+                }
+            }
+        }
+    }
 }

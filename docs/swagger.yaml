@@ -1,4 +1,14 @@
 basePath: /
+definitions:
+  ent.User:
+    properties:
+      id:
+        description: ID of the ent.
+        type: integer
+      uuid:
+        description: UUID holds the value of the "uuid" field.
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact:
@@ -9,7 +19,32 @@ info:
     name: MIT
     url: http://github.com/ugurkorkmaz/gopress
   termsOfService: http://github.com/ugurkorkmaz/gopress/
-  title: GoPress API
+  title: GoPress API Documentation
   version: 0.0.1
-paths: {}
+paths:
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ent.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: json
+        "500":
+          description: Internal Server Error
+          schema:
+            type: json
+      summary: Register
+      tags:
+      - auth
 swagger: "2.0"
