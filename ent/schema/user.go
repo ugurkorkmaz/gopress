@@ -16,6 +16,7 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("uuid", uuid.UUID{}).Default(uuid.New),
 		field.String("name").NotEmpty().MinLen(3).MaxLen(128),
+		field.String("email").NotEmpty().MinLen(3).MaxLen(128),
 	}
 }
 
