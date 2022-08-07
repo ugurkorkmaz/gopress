@@ -18,6 +18,7 @@ func (User) Fields() []ent.Field {
 		field.String("name").NotEmpty().MinLen(3).MaxLen(128),
 		field.String("email").NotEmpty().MinLen(3).MaxLen(128),
 		field.String("password").NotEmpty().MinLen(8),
+		field.Enum("role").Values("user", "admin"),
 	}
 }
 
