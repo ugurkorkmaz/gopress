@@ -3,8 +3,10 @@ module gopress
 go 1.18
 
 require (
+	entgo.io/ent v0.11.1
 	github.com/gofiber/fiber/v2 v2.36.0
 	github.com/gofiber/swagger v0.1.0
+	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
 	github.com/swaggo/swag v1.8.4
 )
