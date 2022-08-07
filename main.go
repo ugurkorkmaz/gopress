@@ -9,6 +9,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/swagger"
+
+	_ "gopress/docs"
 )
 
 var server *fiber.App
@@ -23,8 +26,19 @@ func init() {
 	server = fiber.New()
 
 	server.Use(logger.New())
+	server.Get("/swagger/*", swagger.HandlerDefault)
 }
 
+// @title GoPress API Documentation
+// @version 0.0.1
+// @description GoPress API Documentation
+// @termsOfService http://github.com/ugurkorkmaz/gopress/
+// @contact.name API Support
+// @contact.email ugur@extends.work
+// @license.name MIT
+// @license.url http://github.com/ugurkorkmaz/gopress
+// @host localhost:3000
+// @BasePath /
 func main() {
 	api := server.Group("/api")
 
