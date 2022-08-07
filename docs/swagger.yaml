@@ -1,12 +1,18 @@
 basePath: /
 definitions:
-  ent.User:
+  entity.Failure:
     properties:
-      id:
-        description: ID of the ent.
+      code:
         type: integer
+      error: {}
+      message:
+        type: string
+    type: object
+  entity.User:
+    properties:
+      username:
+        type: string
       uuid:
-        description: UUID holds the value of the "uuid" field.
         type: string
     type: object
 host: localhost:3000
@@ -34,16 +40,14 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/ent.User'
+              $ref: '#/definitions/entity.User'
             type: array
         "400":
           description: Bad Request
           schema:
-            type: json
-        "500":
-          description: Internal Server Error
-          schema:
-            type: json
+            items:
+              $ref: '#/definitions/entity.Failure'
+            type: array
       summary: Register
       tags:
       - auth

@@ -43,20 +43,17 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/ent.User"
+                                "$ref": "#/definitions/entity.User"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "json"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "json"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Failure"
+                            }
                         }
                     }
                 }
@@ -64,15 +61,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "ent.User": {
+        "entity.Failure": {
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "ID of the ent.",
+                "code": {
                     "type": "integer"
                 },
+                "error": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.User": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
                 "uuid": {
-                    "description": "UUID holds the value of the \"uuid\" field.",
                     "type": "string"
                 }
             }
