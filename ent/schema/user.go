@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -19,6 +21,7 @@ func (User) Fields() []ent.Field {
 		field.String("email").NotEmpty().MinLen(3).MaxLen(128),
 		field.String("password").NotEmpty().MinLen(8),
 		field.Enum("role").Values("user", "admin"),
+		field.Time("created_at").Immutable().Default(time.Now),
 	}
 }
 
