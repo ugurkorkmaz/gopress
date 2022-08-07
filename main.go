@@ -4,6 +4,7 @@ import (
 	"gopress/app/database"
 	"gopress/app/environment"
 	"gopress/handler/auth"
+	"gopress/handler/exception"
 	"gopress/handler/post"
 	"gopress/handler/user"
 
@@ -24,7 +25,11 @@ func init() {
 	if err := database.Connect(); err != nil {
 		panic(err)
 	}
-	server = fiber.New()
+	server = fiber.New(fiber.Config{
+		AppName:      "GoPress",
+		ServerHeader: "GoPress",
+		ErrorHandler: exception.Throw,
+	})
 
 	server.Use(logger.New(), cors.New())
 	server.Get("/swagger/*", swagger.HandlerDefault)
@@ -43,22 +48,22 @@ func init() {
 func main() {
 	api := server.Group("/api")
 
-	auths := api.Group("/auth")
-	auths.Post("/register", auth.Register)
-	auths.Post("/login", auth.Login)
+	auths := api.Group("/auth").Name("auth.")
+	auths.Post("/register", auth.Register).Name("register")
+	auths.Post("/login", auth.Login).Name("login")
 
-	posts := api.Group("/post", auth.Guard)
-	posts.Post("/", post.Create)
-	posts.Get("/:id", post.Show)
-	posts.Put("/:id", post.Update)
-	posts.Delete("/:id", post.Delete)
-	posts.Get("/", post.List)
+	posts := api.Group("/post", auth.Guard).Name("post.")
+	posts.Post("/", post.Create).Name("create")
+	posts.Get("/:id", post.Show).Name("show")
+	posts.Put("/:id", post.Update).Name("update")
+	posts.Delete("/:id", post.Delete).Name("delete")
+	posts.Get("/", post.List).Name("list")
 
-	users := api.Group("/user", auth.Guard)
-	users.Get("/:id", user.Show)
-	users.Put("/:id", user.Update)
-	users.Delete("/:id", user.Delete)
-	users.Get("/", user.List)
+	users := api.Group("/user", auth.Guard).Name("user.")
+	users.Get("/:id", user.Show).Name("show")
+	users.Put("/:id", user.Update).Name("update")
+	users.Delete("/:id", user.Delete).Name("delete")
+	users.Get("/", user.List).Name("list")
 
 	server.Listen(":3000")
 }
