@@ -8,6 +8,7 @@ import (
 	"gopress/handler/user"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 
@@ -25,7 +26,7 @@ func init() {
 	}
 	server = fiber.New()
 
-	server.Use(logger.New())
+	server.Use(logger.New(), cors.New())
 	server.Get("/swagger/*", swagger.HandlerDefault)
 }
 
