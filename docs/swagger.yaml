@@ -1,4 +1,15 @@
+basePath: /
+host: localhost:3000
 info:
-  contact: {}
+  contact:
+    email: ugur@extends.work
+    name: API Support
+  description: GoPress API Documentation
+  license:
+    name: MIT
+    url: http://github.com/ugurkorkmaz/gopress
+  termsOfService: http://github.com/ugurkorkmaz/gopress/
+  title: GoPress API
+  version: 0.0.1
 paths: {}
 swagger: "2.0"

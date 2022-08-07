@@ -1,7 +1,20 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "GoPress API Documentation",
+        "title": "GoPress API",
+        "termsOfService": "http://github.com/ugurkorkmaz/gopress/",
+        "contact": {
+            "name": "API Support",
+            "email": "ugur@extends.work"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "http://github.com/ugurkorkmaz/gopress"
+        },
+        "version": "0.0.1"
     },
+    "host": "localhost:3000",
+    "basePath": "/",
     "paths": {}
 }
