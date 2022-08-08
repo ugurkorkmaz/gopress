@@ -12,12 +12,28 @@ var (
 	PostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "slug", Type: field.TypeString, Size: 255},
+		{Name: "content", Type: field.TypeString, Size: 65535},
+		{Name: "more_info", Type: field.TypeJSON, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published", "archived"}, Default: "draft"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_posts", Type: field.TypeInt, Nullable: true},
 	}
 	// PostsTable holds the schema information for the "posts" table.
 	PostsTable = &schema.Table{
 		Name:       "posts",
 		Columns:    PostsColumns,
 		PrimaryKey: []*schema.Column{PostsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "posts_users_posts",
+				Columns:    []*schema.Column{PostsColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -45,4 +61,5 @@ var (
 )
 
 func init() {
+	PostsTable.ForeignKeys[0].RefTable = UsersTable
 }

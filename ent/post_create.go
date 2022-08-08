@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"gopress/ent/post"
+	"gopress/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -32,6 +34,91 @@ func (pc *PostCreate) SetNillableUUID(u *uuid.UUID) *PostCreate {
 		pc.SetUUID(*u)
 	}
 	return pc
+}
+
+// SetTitle sets the "title" field.
+func (pc *PostCreate) SetTitle(s string) *PostCreate {
+	pc.mutation.SetTitle(s)
+	return pc
+}
+
+// SetSlug sets the "slug" field.
+func (pc *PostCreate) SetSlug(s string) *PostCreate {
+	pc.mutation.SetSlug(s)
+	return pc
+}
+
+// SetContent sets the "content" field.
+func (pc *PostCreate) SetContent(s string) *PostCreate {
+	pc.mutation.SetContent(s)
+	return pc
+}
+
+// SetMoreInfo sets the "more_info" field.
+func (pc *PostCreate) SetMoreInfo(m map[string]interface{}) *PostCreate {
+	pc.mutation.SetMoreInfo(m)
+	return pc
+}
+
+// SetStatus sets the "status" field.
+func (pc *PostCreate) SetStatus(po post.Status) *PostCreate {
+	pc.mutation.SetStatus(po)
+	return pc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (pc *PostCreate) SetNillableStatus(po *post.Status) *PostCreate {
+	if po != nil {
+		pc.SetStatus(*po)
+	}
+	return pc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (pc *PostCreate) SetCreatedAt(t time.Time) *PostCreate {
+	pc.mutation.SetCreatedAt(t)
+	return pc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (pc *PostCreate) SetNillableCreatedAt(t *time.Time) *PostCreate {
+	if t != nil {
+		pc.SetCreatedAt(*t)
+	}
+	return pc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (pc *PostCreate) SetUpdatedAt(t time.Time) *PostCreate {
+	pc.mutation.SetUpdatedAt(t)
+	return pc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (pc *PostCreate) SetNillableUpdatedAt(t *time.Time) *PostCreate {
+	if t != nil {
+		pc.SetUpdatedAt(*t)
+	}
+	return pc
+}
+
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (pc *PostCreate) SetAuthorID(id int) *PostCreate {
+	pc.mutation.SetAuthorID(id)
+	return pc
+}
+
+// SetNillableAuthorID sets the "author" edge to the User entity by ID if the given value is not nil.
+func (pc *PostCreate) SetNillableAuthorID(id *int) *PostCreate {
+	if id != nil {
+		pc = pc.SetAuthorID(*id)
+	}
+	return pc
+}
+
+// SetAuthor sets the "author" edge to the User entity.
+func (pc *PostCreate) SetAuthor(u *User) *PostCreate {
+	return pc.SetAuthorID(u.ID)
 }
 
 // Mutation returns the PostMutation object of the builder.
@@ -115,12 +202,66 @@ func (pc *PostCreate) defaults() {
 		v := post.DefaultUUID()
 		pc.mutation.SetUUID(v)
 	}
+	if _, ok := pc.mutation.MoreInfo(); !ok {
+		v := post.DefaultMoreInfo
+		pc.mutation.SetMoreInfo(v)
+	}
+	if _, ok := pc.mutation.Status(); !ok {
+		v := post.DefaultStatus
+		pc.mutation.SetStatus(v)
+	}
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		v := post.DefaultCreatedAt()
+		pc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		v := post.DefaultUpdatedAt()
+		pc.mutation.SetUpdatedAt(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PostCreate) check() error {
 	if _, ok := pc.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "Post.uuid"`)}
+	}
+	if _, ok := pc.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Post.title"`)}
+	}
+	if v, ok := pc.mutation.Title(); ok {
+		if err := post.TitleValidator(v); err != nil {
+			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Post.title": %w`, err)}
+		}
+	}
+	if _, ok := pc.mutation.Slug(); !ok {
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Post.slug"`)}
+	}
+	if v, ok := pc.mutation.Slug(); ok {
+		if err := post.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Post.slug": %w`, err)}
+		}
+	}
+	if _, ok := pc.mutation.Content(); !ok {
+		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Post.content"`)}
+	}
+	if v, ok := pc.mutation.Content(); ok {
+		if err := post.ContentValidator(v); err != nil {
+			return &ValidationError{Name: "content", err: fmt.Errorf(`ent: validator failed for field "Post.content": %w`, err)}
+		}
+	}
+	if _, ok := pc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Post.status"`)}
+	}
+	if v, ok := pc.mutation.Status(); ok {
+		if err := post.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Post.status": %w`, err)}
+		}
+	}
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Post.created_at"`)}
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Post.updated_at"`)}
 	}
 	return nil
 }
@@ -156,6 +297,82 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 			Column: post.FieldUUID,
 		})
 		_node.UUID = value
+	}
+	if value, ok := pc.mutation.Title(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: post.FieldTitle,
+		})
+		_node.Title = value
+	}
+	if value, ok := pc.mutation.Slug(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: post.FieldSlug,
+		})
+		_node.Slug = value
+	}
+	if value, ok := pc.mutation.Content(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: post.FieldContent,
+		})
+		_node.Content = value
+	}
+	if value, ok := pc.mutation.MoreInfo(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: post.FieldMoreInfo,
+		})
+		_node.MoreInfo = value
+	}
+	if value, ok := pc.mutation.Status(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: post.FieldStatus,
+		})
+		_node.Status = value
+	}
+	if value, ok := pc.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: post.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
+	}
+	if value, ok := pc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: post.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
+	}
+	if nodes := pc.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   post.AuthorTable,
+			Columns: []string{post.AuthorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_posts = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

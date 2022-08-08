@@ -3,6 +3,9 @@
 package post
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -13,14 +16,50 @@ const (
 	FieldID = "id"
 	// FieldUUID holds the string denoting the uuid field in the database.
 	FieldUUID = "uuid"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
+	// FieldSlug holds the string denoting the slug field in the database.
+	FieldSlug = "slug"
+	// FieldContent holds the string denoting the content field in the database.
+	FieldContent = "content"
+	// FieldMoreInfo holds the string denoting the more_info field in the database.
+	FieldMoreInfo = "more_info"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
+	// EdgeAuthor holds the string denoting the author edge name in mutations.
+	EdgeAuthor = "author"
 	// Table holds the table name of the post in the database.
 	Table = "posts"
+	// AuthorTable is the table that holds the author relation/edge.
+	AuthorTable = "posts"
+	// AuthorInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	AuthorInverseTable = "users"
+	// AuthorColumn is the table column denoting the author relation/edge.
+	AuthorColumn = "user_posts"
 )
 
 // Columns holds all SQL columns for post fields.
 var Columns = []string{
 	FieldID,
 	FieldUUID,
+	FieldTitle,
+	FieldSlug,
+	FieldContent,
+	FieldMoreInfo,
+	FieldStatus,
+	FieldCreatedAt,
+	FieldUpdatedAt,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "posts"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_posts",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -30,10 +69,56 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
 
 var (
 	// DefaultUUID holds the default value on creation for the "uuid" field.
 	DefaultUUID func() uuid.UUID
+	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	TitleValidator func(string) error
+	// SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	SlugValidator func(string) error
+	// ContentValidator is a validator for the "content" field. It is called by the builders before save.
+	ContentValidator func(string) error
+	// DefaultMoreInfo holds the default value on creation for the "more_info" field.
+	DefaultMoreInfo map[string]interface{}
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusDraft is the default value of the Status enum.
+const DefaultStatus = StatusDraft
+
+// Status values.
+const (
+	StatusDraft     Status = "draft"
+	StatusPublished Status = "published"
+	StatusArchived  Status = "archived"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusDraft, StatusPublished, StatusArchived:
+		return nil
+	default:
+		return fmt.Errorf("post: invalid enum value for status field: %q", s)
+	}
+}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gopress/ent/post"
 	"gopress/ent/predicate"
+	"gopress/ent/user"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
@@ -23,6 +24,9 @@ type PostQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Post
+	// eager-loading edges.
+	withAuthor *UserQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +61,28 @@ func (pq *PostQuery) Unique(unique bool) *PostQuery {
 func (pq *PostQuery) Order(o ...OrderFunc) *PostQuery {
 	pq.order = append(pq.order, o...)
 	return pq
+}
+
+// QueryAuthor chains the current query on the "author" edge.
+func (pq *PostQuery) QueryAuthor() *UserQuery {
+	query := &UserQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(post.Table, post.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, post.AuthorTable, post.AuthorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Post entity from the query.
@@ -240,11 +266,23 @@ func (pq *PostQuery) Clone() *PostQuery {
 		offset:     pq.offset,
 		order:      append([]OrderFunc{}, pq.order...),
 		predicates: append([]predicate.Post{}, pq.predicates...),
+		withAuthor: pq.withAuthor.Clone(),
 		// clone intermediate query.
 		sql:    pq.sql.Clone(),
 		path:   pq.path,
 		unique: pq.unique,
 	}
+}
+
+// WithAuthor tells the query-builder to eager-load the nodes that are connected to
+// the "author" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PostQuery) WithAuthor(opts ...func(*UserQuery)) *PostQuery {
+	query := &UserQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withAuthor = query
+	return pq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -313,15 +351,26 @@ func (pq *PostQuery) prepareQuery(ctx context.Context) error {
 
 func (pq *PostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Post, error) {
 	var (
-		nodes = []*Post{}
-		_spec = pq.querySpec()
+		nodes       = []*Post{}
+		withFKs     = pq.withFKs
+		_spec       = pq.querySpec()
+		loadedTypes = [1]bool{
+			pq.withAuthor != nil,
+		}
 	)
+	if pq.withAuthor != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, post.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*Post).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &Post{config: pq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -333,6 +382,36 @@ func (pq *PostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Post, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := pq.withAuthor; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Post)
+		for i := range nodes {
+			if nodes[i].user_posts == nil {
+				continue
+			}
+			fk := *nodes[i].user_posts
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(user.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_posts" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Author = n
+			}
+		}
+	}
+
 	return nodes, nil
 }
 

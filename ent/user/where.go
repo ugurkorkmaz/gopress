@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -743,6 +744,34 @@ func UpdatedAtLT(v time.Time) predicate.User {
 func UpdatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// HasPosts applies the HasEdge predicate on the "posts" edge.
+func HasPosts() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(PostsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PostsTable, PostsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPostsWith applies the HasEdge predicate on the "posts" edge with a given conditions (other predicates).
+func HasPostsWith(preds ...predicate.Post) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(PostsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PostsTable, PostsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 
