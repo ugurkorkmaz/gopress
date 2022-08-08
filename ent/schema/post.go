@@ -18,6 +18,7 @@ func (Post) Fields() []ent.Field {
 		field.String("title").NotEmpty().MinLen(3).MaxLen(255),
 		field.String("slug").NotEmpty().MinLen(3).MaxLen(255),
 		field.Text("content").NotEmpty().MinLen(3).MaxLen(65535),
+		field.Enum("status").Values("draft", "published", "archived").Default("draft"),
 	}
 }
 
