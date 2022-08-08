@@ -20,6 +20,7 @@ func (Post) Fields() []ent.Field {
 		field.String("title").NotEmpty().MinLen(3).MaxLen(255),
 		field.String("slug").NotEmpty().MinLen(3).MaxLen(255),
 		field.Text("content").NotEmpty().MinLen(3).MaxLen(65535),
+		field.JSON("more_info", map[string]interface{}{}).Default(map[string]interface{}{}).Optional(),
 		field.Enum("status").Values("draft", "published", "archived").Default("draft"),
 		field.Time("created_at").Immutable().Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
