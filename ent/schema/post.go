@@ -17,6 +17,7 @@ func (Post) Fields() []ent.Field {
 		field.UUID("uuid", uuid.UUID{}).Default(uuid.New),
 		field.String("title").NotEmpty().MinLen(3).MaxLen(255),
 		field.String("slug").NotEmpty().MinLen(3).MaxLen(255),
+		field.Text("content").NotEmpty().MinLen(3).MaxLen(65535),
 	}
 }
 
