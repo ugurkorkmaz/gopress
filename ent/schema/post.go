@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -19,6 +21,8 @@ func (Post) Fields() []ent.Field {
 		field.String("slug").NotEmpty().MinLen(3).MaxLen(255),
 		field.Text("content").NotEmpty().MinLen(3).MaxLen(65535),
 		field.Enum("status").Values("draft", "published", "archived").Default("draft"),
+		field.Time("created_at").Immutable().Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
