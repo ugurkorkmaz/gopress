@@ -21,7 +21,9 @@ func (User) Fields() []ent.Field {
 		field.String("email").NotEmpty().MinLen(3).MaxLen(128),
 		field.String("password").NotEmpty().MinLen(8),
 		field.Enum("role").Values("user", "admin"),
+		field.JSON("more_info", map[string]interface{}{}).Default(map[string]interface{}{}).Optional(),
 		field.Time("created_at").Immutable().Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
