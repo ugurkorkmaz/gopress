@@ -1,18 +1,124 @@
-basePath: /
+basePath: /api
 definitions:
-  entity.Failure:
+  model.Exception:
     properties:
       code:
         type: integer
-      error: {}
       message:
         type: string
     type: object
-  entity.User:
+  model.LoginRequest:
     properties:
-      username:
+      email:
         type: string
-      uuid:
+      password:
+        type: string
+    type: object
+  model.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  model.Post:
+    properties:
+      body:
+        type: string
+      created:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated:
+        type: string
+    type: object
+  model.PostCreateRequest:
+    properties:
+      body:
+        type: string
+      title:
+        type: string
+    type: object
+  model.PostCreateResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  model.PostDeleteResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  model.PostListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Post'
+        type: array
+    type: object
+  model.PostUpdateRequest:
+    properties:
+      body:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+  model.PostUpdateResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  model.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  model.RegisterResponse:
+    properties:
+      token:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.UserDeleteResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  model.UserListResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/model.Users'
+        type: array
+    type: object
+  model.UserShowResponse:
+    properties:
+      users:
+        $ref: '#/definitions/model.Users'
+    type: object
+  model.UserUpdateResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  model.Users:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
         type: string
     type: object
 host: localhost:3000
@@ -28,11 +134,18 @@ info:
   title: GoPress API Documentation
   version: 0.0.1
 paths:
-  /api/auth/register:
-    post:
+  /auth/login:
+    get:
       consumes:
       - application/json
-      description: Register a new user
+      description: Login a user
+      parameters:
+      - description: Login Request
+        in: body
+        name: Data
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
       produces:
       - application/json
       responses:
@@ -40,15 +153,357 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.User'
+              $ref: '#/definitions/model.LoginResponse'
             type: array
         "400":
           description: Bad Request
           schema:
             items:
-              $ref: '#/definitions/entity.Failure'
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Login
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Register Request
+        in: body
+        name: Data
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.RegisterResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
             type: array
       summary: Register
       tags:
-      - auth
+      - Auth
+  /post/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a post
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post data
+        in: body
+        name: Data
+        required: true
+        schema:
+          $ref: '#/definitions/model.PostCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.PostCreateResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Create a post
+      tags:
+      - Post
+  /post/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post Id
+        in: path
+        name: Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.PostDeleteResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Delete a post
+      tags:
+      - Post
+  /post/list:
+    get:
+      consumes:
+      - application/json
+      description: list posts
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        maximum: 10
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        maximum: 10
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.PostListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: list posts
+      tags:
+      - Post
+  /post/show/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Post show
+      parameters:
+      - description: Post Id
+        in: path
+        name: Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.PostDeleteResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Post show
+      tags:
+      - Post
+  /post/update:
+    put:
+      consumes:
+      - application/json
+      description: Update a post
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post data
+        in: body
+        name: Data
+        required: true
+        schema:
+          $ref: '#/definitions/model.PostUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.PostUpdateResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Update a post
+      tags:
+      - Post
+  /user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Post Id
+        in: path
+        name: Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.UserDeleteResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Delete user
+      tags:
+      - User
+  /user/list:
+    get:
+      consumes:
+      - application/json
+      description: List users
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        maximum: 10
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        maximum: 10
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.UserListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: List users
+      tags:
+      - User
+  /user/show/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Show user
+      parameters:
+      - description: User Id
+        in: path
+        name: Id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.UserShowResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Show user
+      tags:
+      - User
+  /user/update:
+    put:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User data
+        in: body
+        name: Data
+        required: true
+        schema:
+          $ref: '#/definitions/model.PostUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.UserUpdateResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            items:
+              $ref: '#/definitions/model.Exception'
+            type: array
+      summary: Update user
+      tags:
+      - User
 swagger: "2.0"

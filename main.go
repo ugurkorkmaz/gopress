@@ -7,9 +7,11 @@ import (
 	"gopress/handler/exception"
 	"gopress/handler/post"
 	"gopress/handler/user"
+	"gopress/template"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 
@@ -44,7 +46,7 @@ func init() {
 // @license.name MIT
 // @license.url http://github.com/ugurkorkmaz/gopress
 // @host localhost:3000
-// @BasePath /
+// @BasePath /api
 func main() {
 	api := server.Group("/api")
 
@@ -52,18 +54,22 @@ func main() {
 	auths.Post("/register", auth.Register).Name("register")
 	auths.Post("/login", auth.Login).Name("login")
 
-	posts := api.Group("/post", auth.Guard).Name("post.")
-	posts.Post("/", post.Create).Name("create")
-	posts.Get("/:id", post.Show).Name("show")
-	posts.Put("/:id", post.Update).Name("update")
-	posts.Delete("/:id", post.Delete).Name("delete")
-	posts.Get("/", post.List).Name("list")
+	posts := api.Group("/post").Name("post.")
+	posts.Get("/show/:id", post.Show).Name("show")
+	posts.Get("/list", post.List).Name("list")
+	posts.Use(auth.Guard).Post("/create", post.Create).Name("create")
+	posts.Use(auth.Guard).Put("/update", post.Update).Name("update")
+	posts.Use(auth.Guard).Delete("/delete/:id", post.Delete).Name("delete")
 
-	users := api.Group("/user", auth.Guard).Name("user.")
+	users := api.Group("/user").Name("user.")
 	users.Get("/:id", user.Show).Name("show")
-	users.Put("/:id", user.Update).Name("update")
-	users.Delete("/:id", user.Delete).Name("delete")
-	users.Get("/", user.List).Name("list")
+	users.Use(auth.Guard).Put("/:id", user.Update).Name("update")
+	users.Use(auth.Guard).Delete("/:id", user.Delete).Name("delete")
+	users.Use(auth.Guard).Get("/", user.List).Name("list")
 
+	server.Use("/", filesystem.New(filesystem.Config{
+		Root:         template.Dist(),
+		NotFoundFile: "index.html",
+	}))
 	server.Listen(":3000")
 }
